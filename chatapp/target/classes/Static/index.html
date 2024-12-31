@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #6200ea;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .loading {
+            font-size: 14px;
+            color: #6200ea;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Chat Application</h1>
+    </header>
+    <div class="container">
+        <h2>Send a Message</h2>
+        <form id="messageForm">
+            <input type="text" id="sender" placeholder="Sender" required>
+            <input type="text" id="receiver" placeholder="Receiver" required>
+            <input type="text" id="content" placeholder="Message Content" required>
+            <button type="submit">Send</button>
+        </form>
+        <h2>Message History</h2>
+        <div id="loading" class="loading">Loading...</div>
+        <ul id="messageList"></ul>
+    </div>
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const sender = document.getElementById('sender').value;
+            const receiver = document.getElementById('receiver').value;
+            const content = document.getElementById('content').value;
+            const loadingIndicator = document.getElementById('loading');
+            loadingIndicator.style.display = 'block'; // Show loading indicator
+
+            try {
+                // Send the message
+                await fetch('http://localhost:8080/chat/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ sender, receiver, content }),
+                });
+
+                // Fetch the message history
+                const response = await fetch(`http://localhost:8080/chat/history?username=${encodeURIComponent(sender)}`);
+                if (!response.ok) throw new Error('Failed to fetch message history');
+                
+                const messages = await response.json();
+
+                // Display the message history
+                const messageList = document.getElementById('messageList');
+                messageList.innerHTML = messages.map(msg => `
+                    <li><strong>${msg.sender}</strong> to <strong>${msg.receiver}</strong>: ${msg.content}</li>
+                `).join('');
+
+                // Clear the form
+                document.getElementById('messageForm').reset();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Check the console for details.');
+            } finally {
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+            }
+        });
+    </script>
+</body>
+</html>

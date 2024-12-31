@@ -1,0 +1,5 @@
+com\mycompany\chatapp\model\User.class
+com\mycompany\chatapp\Chatapp.class
+com\mycompany\chatapp\model\Message.class
+com\mycompany\chatapp\controller\ChatController.class
+com\mycompany\chatapp\service\ChatService.class
